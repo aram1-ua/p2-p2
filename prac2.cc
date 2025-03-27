@@ -102,17 +102,18 @@ int searchPatient(const Database &db, const string &nif){
 
 
 bool isValidNif(const string &nif){
-    if(nif.length() != 9){
+    if(nif.length() != 8){
         return false;
     }
-    for(int i= 0; i < 8; i++){
+    for(int i= 0; i < 7; i++){
         if(!isdigit(nif[i])) {
             return false;
         }
     }
-    if (!isalpha(nif[8])){
+    if (!isalpha(nif[7])){
         return false;
     }
+
     return true;
 
 }
@@ -120,6 +121,7 @@ bool isValidNif(const string &nif){
 void addPatient(Database &db){
     Patient patient;
     bool validNif = false;
+    bool validNif2 = false;
     bool validName = false;
     bool validTele = false;
 
@@ -132,21 +134,24 @@ void addPatient(Database &db){
             validNif = true;
             return;
         }
+
+        validNif2 = isValidNif(patient.nif);
         
-        if(!isValidNif(patient.nif) && !patient.nif.empty()){
+        if(validNif2 == false){
             error(ERR_WRONG_NIF);
             validNif = false;
-        }
-
-        if(searchPatient(db, patient.nif) != -1){
+        } else if(searchPatient(db, patient.nif) != -1){
             error(ERR_PATIENT_EXISTS);
             validNif = false;
+         }else{
+            validNif = true;
         }
     }while(validNif == false);
 
-    cin.ignore();
+    
     do{
         cout << "Enter name: ";
+        cin.ignore();
         getline(cin, patient.name);
 
         if (patient.name.length() < 3){
@@ -304,13 +309,6 @@ void addAnalysis(Database &db){
     do{
         cout << "Enter date (day/month/year): ";
         cin >> a.dateAnalysis.day >> a.dateAnalysis.month >> a.dateAnalysis.year;
-        if (cin.fail()) {  // If input fails, clear it
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            error(ERR_WRONG_DATE);
-            continue;
-        }
-
         if (a.dateAnalysis.day < 1 || a.dateAnalysis.day > 31 || 
             a.dateAnalysis.month < 1 || a.dateAnalysis.month > 12 ||
             a.dateAnalysis.year < 2025 || a.dateAnalysis.year > 2050) {
